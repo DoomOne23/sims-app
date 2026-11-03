@@ -486,5 +486,12 @@
             }
         }).mount('#app');
     </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./pwabuilder-sw.js')
+      .then(() => console.log('Service Worker registrado con éxito.'))
+      .catch((err) => console.log('Error al registrar el Service Worker:', err));
+  }
+</script>
 </body>
 </html>
