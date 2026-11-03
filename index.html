@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyaaa! Sims Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #FAF5F7;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #3A3238;
+        }
+        .plumbob-wrapper {
+            position: relative;
+            width: 44px;
+            height: 66px;
+            margin: 0 auto;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-3 flex justify-center items-start">
+    <div id="app" class="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-[#FFCAD4]">
+        
+        <!-- HEADER EN ROSA PASTEL -->
+        <div class="bg-[#F4ACB7] p-5 text-center text-white relative">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full font-bold">§ {{ money }} Simoleones</span>
+                <span class="text-xs bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full font-bold">✨ {{ whims }} Caprichos</span>
+            </div>
+            
+            <!-- PLUMBOB CON GLOW DINÁMICO -->
+            <div class="plumbob-wrapper my-3">
+                <svg viewBox="0 0 100 160" class="w-full h-full" :style="{ filter: 'drop-shadow(0 0 10px ' + moodColors.light + ')' }">
+                    <defs>
+                        <linearGradient id="pl-left" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" :stop-color="moodColors.light" />
+                            <stop offset="100%" :stop-color="moodColors.base" />
+                        </linearGradient>
+                        <linearGradient id="pl-right" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" :stop-color="moodColors.base" />
+                            <stop offset="100%" :stop-color="moodColors.dark" />
+                        </linearGradient>
+                        <linearGradient id="pl-top-facet" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6" />
+                            <stop offset="100%" :stop-color="moodColors.light" stop-opacity="0.8" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Mitad Izquierda -->
+                    <polygon points="50,15 15,75 50,85" fill="url(#pl-left)" />
+                    <polygon points="50,145 15,75 50,85" fill="url(#pl-left)" />
+
+                    <!-- Mitad Derecha (Sombra central) -->
+                    <polygon points="50,15 85,75 50,85" fill="url(#pl-right)" />
+                    <polygon points="50,145 85,75 50,85" fill="url(#pl-right)" />
+
+                    <!-- Faceta Lateral Superior Izquierda -->
+                    <polygon points="50,15 32,45 15,75" fill="url(#pl-top-facet)" />
+                </svg>
+            </div>
+
+            <h1 class="text-lg font-bold tracking-wide">Nyaaa! (*^ω^)</h1>
+            <p class="text-xs text-white/90 font-medium">{{ moodText }}</p>
+        </div>
+
+        <!-- PESTAÑAS -->
+        <div class="flex border-b border-[#FFCAD4] bg-[#FFF0F3] text-xs font-semibold">
+            <button @click="tab = 'needs'" class="flex-1 py-3 text-center transition" :class="tab === 'needs' ? 'bg-white border-b-2 border-[#F4ACB7] text-[#D87093]' : 'text-gray-500'">Necesidades</button>
+            <button @click="tab = 'queue'" class="flex-1 py-3 text-center transition" :class="tab === 'queue' ? 'bg-white border-b-2 border-[#F4ACB7] text-[#D87093]' : 'text-gray-500'">Acciones</button>
+            <button @click="tab = 'skills'" class="flex-1 py-3 text-center transition" :class="tab === 'skills' ? 'bg-white border-b-2 border-[#F4ACB7] text-[#D87093]' : 'text-gray-500'">Habilidades</button>
+            <button @click="tab = 'shop'" class="flex-1 py-3 text-center transition" :class="tab === 'shop' ? 'bg-white border-b-2 border-[#F4ACB7] text-[#D87093]' : 'text-gray-500'">Tienda</button>
+        </div>
+
+        <!-- CONTENIDO -->
+        <div class="p-5 space-y-4 bg-[#FAF5F7] min-h-[380px]">
+            
+            <!-- 1. NECESIDADES -->
+            <div v-if="tab === 'needs'" class="space-y-3">
+                <h2 class="text-xs font-bold text-[#D87093] uppercase tracking-wider mb-1">Barras Vitales</h2>
+                <div v-for="(need, key) in needs" :key="key" class="bg-white p-3 rounded-2xl border border-[#FFE5EC] shadow-sm space-y-2">
+                    <div class="flex justify-between text-xs font-bold">
+                        <span>{{ need.name }}</span>
+                        <span>{{ need.value }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-100 h-3.5 rounded-full overflow-hidden p-0.5 border border-pink-100">
+                        <div class="h-full transition-all duration-300 rounded-full"
+                             :style="{ width: need.value + '%' }"
+                             :class="need.value > 60 ? 'bg-emerald-400' : need.value > 30 ? 'bg-amber-400' : 'bg-rose-400'"></div>
+                    </div>
+                    <div class="flex gap-2 pt-1">
+                        <button @click="adjustNeed(key, -15)" class="flex-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl py-1 text-xs font-bold active:scale-95">-15</button>
+                        <button @click="adjustNeed(key, 25)" class="flex-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl py-1 text-xs font-bold active:scale-95">+25</button>
+                    </div>
+                    <div class="bg-[#FFF8F9] p-2 rounded-xl border border-[#FFE5EC] text-[11px] text-gray-600 space-y-1">
+                        <p class="font-bold text-[#D87093] text-[10px] uppercase">💡 Ideas para subir esta barra:</p>
+                        <ul class="list-disc list-inside space-y-0.5">
+                            <li v-for="tip in need.tips" :key="tip">{{ tip }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. COLA DE ACCIONES -->
+            <div v-if="tab === 'queue'" class="space-y-3">
+                <h2 class="text-xs font-bold text-[#D87093] uppercase tracking-wider mb-1">Cola de Acciones</h2>
+                
+                <div class="bg-white p-3 rounded-2xl border border-[#FFE5EC] shadow-sm space-y-2">
+                    <input v-model="newTaskText" type="text" placeholder="Nueva tarea o hábito..." class="w-full bg-[#FAF5F7] border border-[#FFE5EC] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#F4ACB7]">
+                    <div class="flex gap-2 items-center">
+                        <select v-model="newTaskDifficulty" class="flex-1 bg-[#FAF5F7] border border-[#FFE5EC] rounded-xl px-2 py-1.5 text-xs focus:outline-none focus:border-[#F4ACB7]">
+                            <option value="easy">🟢 Fácil (+20§ / +10✨)</option>
+                            <option value="medium">🟡 Media (+50§ / +20✨)</option>
+                            <option value="hard">🟠 Difícil (+100§ / +40✨)</option>
+                            <option value="epic">🟣 Épica (+200§ / +80✨)</option>
+                        </select>
+                        <button @click="addAction" class="bg-[#F4ACB7] text-white px-4 py-1.5 rounded-xl font-bold text-xs shadow hover:bg-[#E5989B] shrink-0">+</button>
+                    </div>
+                </div>
+
+                <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <div v-for="(action, index) in actions" :key="index" class="flex items-center justify-between bg-white p-3 rounded-2xl border border-[#FFE5EC] shadow-sm">
+                        <div class="pr-2">
+                            <span class="text-xs font-medium block" :class="{ 'line-through text-gray-400': action.done }">{{ action.text }}</span>
+                            <span class="text-[10px] text-gray-400">+{{ action.rewardMoney }}§ | +{{ action.rewardWhims }}✨</span>
+                        </div>
+                        <div class="flex gap-1.5 items-center">
+                            <button @click="completeAction(index)" class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-xl text-xs font-bold">✓</button>
+                            <button @click="removeAction(index)" class="text-gray-400 hover:text-rose-500 text-xs px-1">✕</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. HABILIDADES -->
+            <div v-if="tab === 'skills'" class="space-y-3">
+                <h2 class="text-xs font-bold text-[#D87093] uppercase tracking-wider mb-1">Árbol de Habilidades</h2>
+                <div class="flex gap-2">
+                    <input v-model="newSkillName" type="text" placeholder="Nueva habilidad..." class="flex-1 bg-white border border-[#FFE5EC] rounded-2xl px-3 py-2 text-xs focus:outline-none focus:border-[#F4ACB7]">
+                    <button @click="addSkill" class="bg-[#F4ACB7] text-white px-4 rounded-2xl font-bold text-sm hover:bg-[#E5989B]">+</button>
+                </div>
+                <div class="space-y-2.5 max-h-72 overflow-y-auto">
+                    <div v-for="(skill, index) in skills" :key="index" class="bg-white p-3 rounded-2xl border border-[#FFE5EC] shadow-sm space-y-2">
+                        <div class="flex justify-between items-center text-xs font-bold">
+                            <span>{{ skill.name }} <span class="text-[#D87093]">(Nivel {{ skill.level }})</span></span>
+                            <div class="flex gap-1">
+                                <button @click="resetSkill(index)" class="text-gray-400 hover:text-gray-600 px-1 text-xs" title="Reiniciar">🔄</button>
+                                <button @click="deleteSkill(index)" class="text-rose-400 hover:text-rose-600 px-1 text-xs" title="Eliminar">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden border border-pink-100">
+                            <div class="bg-[#F4ACB7] h-full transition-all duration-300" :style="{ width: (skill.xp % 100) + '%' }"></div>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button @click="addXp(index, -10)" class="bg-pink-50 text-[#D87093] border border-pink-100 rounded-xl px-2 py-1 text-xs font-bold">-10</button>
+                            <button @click="addXp(index, 5)" class="flex-1 bg-pink-100 text-[#D87093] rounded-xl py-1 text-xs font-bold">+5 XP</button>
+                            <button @click="addXp(index, 15)" class="flex-1 bg-[#F4ACB7] text-white rounded-xl py-1 text-xs font-bold hover:bg-[#E5989B]">+15 XP</button>
+                            <button @click="addXp(index, 30)" class="flex-1 bg-[#D87093] text-white rounded-xl py-1 text-xs font-bold">+30 XP</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. TIENDAS -->
+            <div v-if="tab === 'shop'" class="space-y-3">
+                <div class="flex border-b border-[#FFE5EC] pb-2 mb-2">
+                    <button @click="shopSubTab = 'money'" class="flex-1 text-xs font-bold pb-1 text-center transition" :class="shopSubTab === 'money' ? 'text-[#D87093] border-b-2 border-[#F4ACB7]' : 'text-gray-400'">Tienda Simoleones (§)</button>
+                    <button @click="shopSubTab = 'whims'" class="flex-1 text-xs font-bold pb-1 text-center transition" :class="shopSubTab === 'whims' ? 'text-[#D87093] border-b-2 border-[#F4ACB7]' : 'text-gray-400'">Tienda Caprichos (✨)</button>
+                </div>
+
+                <!-- SUB-TIENDA SIMOLEONES -->
+                <div v-if="shopSubTab === 'money'" class="space-y-3">
+                    <div class="bg-white p-3 rounded-2xl border border-[#FFE5EC] shadow-sm space-y-2">
+                        <p class="text-[11px] font-bold text-gray-700">➕ Añadir premio (§)</p>
+                        <div class="flex flex-nowrap items-center gap-2 w-full">
+                            <input v-model="newRewardName" type="text" placeholder="Nombre..." class="flex-1 min-w-0 bg-[#FAF5F7] border border-[#FFE5EC] rounded-xl px-2.5 py-2 text-xs focus:outline-none focus:border-[#F4ACB7]">
+                            <input v-model.number="newRewardCost" type="number" placeholder="§ Costo" class="w-16 sm:w-20 shrink-0 bg-[#FAF5F7] border border-[#FFE5EC] rounded-xl px-2 py-2 text-xs focus:outline-none focus:border-[#F4ACB7]">
+                            <button @click="addReward" class="bg-[#F4ACB7] text-white h-8 w-8 flex items-center justify-center rounded-xl text-base font-bold hover:bg-[#E5989B] shrink-0">+</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
+                        <div v-for="(item, index) in shopItems" :key="index" class="flex items-center justify-between bg-white p-3 rounded-2xl border border-[#FFE5EC] shadow-sm">
+                            <div class="pr-2">
+                                <p class="text-xs font-bold text-gray-800">{{ item.name }}</p>
+                                <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">§ {{ item.cost }} Simoleones</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button @click="buyItem(item)" class="bg-[#D87093] text-white px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-[#C75C82] shrink-0">Canjear</button>
+                                <button @click="removeReward(index)" class="text-gray-400 hover:text-rose-500 text-xs px-1" title="Eliminar">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-TIENDA CAPRICHOS -->
+                <div v-if="shopSubTab === 'whims'" class="space-y-3">
+                    <div class="bg-white p-3 rounded-2xl border border-[#FFE5EC] shadow-sm space-y-2">
+                        <p class="text-[11px] font-bold text-gray-700">✨ Añadir antojo express (Capricho)</p>
+                        <div class="flex flex-nowrap items-center gap-2 w-full">
+                            <input v-model="newWhimName" type="text" placeholder="Antojo..." class="flex-1 min-w-0 bg-[#FAF5F7] border border-[#FFE5EC] rounded-xl px-2.5 py-2 text-xs focus:outline-none focus:border-[#F4ACB7]">
+                            <input v-model.number="newWhimCost" type="number" placeholder="✨ Costo" class="w-16 sm:w-20 shrink-0 bg-[#FAF5F7] border border-[#FFE5EC] rounded-xl px-2 py-2 text-xs focus:outline-none focus:border-[#F4ACB7]">
+                            <button @click="addWhimStoreItem" class="bg-[#F4ACB7] text-white h-8 w-8 flex items-center justify-center rounded-xl text-base font-bold hover:bg-[#E5989B] shrink-0">+</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
+                        <div v-for="(item, index) in whimShopItems" :key="index" class="flex items-center justify-between bg-white p-3 rounded-2xl border border-[#FFE5EC] shadow-sm">
+                            <div class="pr-2">
+                                <p class="text-xs font-bold text-gray-800">{{ item.name }}</p>
+                                <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold">✨ {{ item.cost }} Caprichos</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button @click="buyWhimItem(item)" class="bg-purple-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-purple-600 shrink-0">Canjear</button>
+                                <button @click="removeWhimStoreItem(index)" class="text-gray-400 hover:text-rose-500 text-xs px-1" title="Eliminar">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="bg-[#FFF0F3] p-3 text-center text-[11px] text-gray-500 border-t border-[#FFCAD4]">
+            <span class="font-medium">💾 Guardado automático activo</span>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp, ref, computed, watch, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const tab = ref('needs');
+                const shopSubTab = ref('money');
+                
+                const money = ref(0);
+                const whims = ref(0);
+
+                const needs = ref({
+                    hunger: { 
+                        name: '🍔 Hambre', 
+                        value: 80,
+                        tips: ['Comer algo rico y nutritivo', 'Preparar un snack o té']
+                    },
+                    hygiene: { 
+                        name: '🧼 Higiene', 
+                        value: 90,
+                        tips: ['Tomar una ducha relajante', 'Lavarse la cara / skincare']
+                    },
+                    energy: { 
+                        name: '⚡ Energía', 
+                        value: 70,
+                        tips: ['Dormir una siesta de 20 min', 'Tomar aire fresco afuera']
+                    },
+                    fun: { 
+                        name: '🎮 Diversión', 
+                        value: 60,
+                        tips: ['Jugar un rato videojuegos', 'Ver un episodio de serie']
+                    }
+                });
+
+                const actions = ref([
+                    { text: 'Estudiar ilustración (30 min)', done: false, rewardMoney: 50, rewardWhims: 20 },
+                    { text: 'Hacer orden básica de pieza', done: false, rewardMoney: 30, rewardWhims: 15 }
+                ]);
+                const newTaskText = ref('');
+                const newTaskDifficulty = ref('medium');
+
+                const skills = ref([
+                    { name: 'Ilustración Digital', level: 1, xp: 0 },
+                    { name: 'Productividad', level: 1, xp: 0 }
+                ]);
+                const newSkillName = ref('');
+
+                const shopItems = ref([
+                    { name: '☕ Pausa de café o té especial', cost: 100 },
+                    { name: '📖 Pase de lectura libre (30 min)', cost: 300 },
+                    { name: '🍿 Episodio de serie sin culpa', cost: 300 },
+                    { name: '💅 Hacer la manicure / Autocuidado', cost: 400 },
+                    { name: '✏️ Gomas o lápices bonitos', cost: 600 },
+                    { name: '🎨 Papel de acuarela', cost: 800 },
+                    { name: '🎨 Acuarelas nuevas', cost: 1000 },
+                    { name: '📚 Comprar un libro', cost: 1200 },
+                    { name: '👕 Comprar ropa', cost: 2500 },
+                    { name: '🖊️ Lápiz stylus para tablet', cost: 8000 },
+                    { name: '💻 Computador nuevo', cost: 45000 }
+                ]);
+
+                const whimShopItems = ref([
+                    { name: '🥤 Disfrutar una Bebida Zero', cost: 15 },
+                    { name: '🎵 Escuchar álbum completo de música', cost: 25 },
+                    { name: '📺 Ver un video de entretenimiento', cost: 30 },
+                    { name: '🧩 15 min de puzzle o colorear', cost: 40 }
+                ]);
+
+                const newRewardName = ref('');
+                const newRewardCost = ref(200);
+
+                const newWhimName = ref('');
+                const newWhimCost = ref(20);
+
+                onMounted(() => {
+                    const saved = localStorage.getItem('sims_pastel_data_v11');
+                    if (saved) {
+                        try {
+                            const data = JSON.parse(saved);
+                            money.value = data.money ?? 0;
+                            whims.value = data.whims ?? 0;
+                            needs.value = data.needs ?? needs.value;
+                            actions.value = data.actions ?? actions.value;
+                            skills.value = data.skills ?? skills.value;
+                            if (data.shopItems) shopItems.value = data.shopItems;
+                            if (data.whimShopItems) whimShopItems.value = data.whimShopItems;
+                        } catch(e) {}
+                    }
+                });
+
+                const saveData = () => {
+                    localStorage.setItem('sims_pastel_data_v11', JSON.stringify({
+                        money: money.value,
+                        whims: whims.value,
+                        needs: needs.value,
+                        actions: actions.value,
+                        skills: skills.value,
+                        shopItems: shopItems.value,
+                        whimShopItems: whimShopItems.value
+                    }));
+                };
+
+                watch([money, whims, needs, actions, skills, shopItems, whimShopItems], saveData, { deep: true });
+
+                const overallMood = computed(() => {
+                    const values = Object.values(needs.value).map(n => n.value);
+                    const sum = values.reduce((a, b) => a + b, 0);
+                    return Math.round(sum / values.length);
+                });
+
+                const moodText = computed(() => {
+                    if (overallMood.value >= 70) return '¡Feliz / Inspirado! ✨';
+                    if (overallMood.value >= 40) return 'Neutro / Normal 🙂';
+                    return '¡Tenso / Fatigado! ⚠️';
+                });
+
+                const moodColors = computed(() => {
+                    if (overallMood.value >= 70) {
+                        return {
+                            base: '#10B981',
+                            light: '#6EE7B7',
+                            dark: '#047857'
+                        };
+                    } else if (overallMood.value >= 40) {
+                        return {
+                            base: '#F59E0B',
+                            light: '#FDE047',
+                            dark: '#B45309'
+                        };
+                    } else {
+                        return {
+                            base: '#EF4444',
+                            light: '#FCA5A5',
+                            dark: '#B91C1C'
+                        };
+                    }
+                });
+
+                const adjustNeed = (key, amount) => {
+                    let val = needs.value[key].value + amount;
+                    needs.value[key].value = Math.max(0, Math.min(100, val));
+                };
+
+                const addAction = () => {
+                    if (!newTaskText.value.trim()) return;
+                    
+                    let m = 50, w = 20;
+                    if (newTaskDifficulty.value === 'easy') { m = 20; w = 10; }
+                    if (newTaskDifficulty.value === 'medium') { m = 50; w = 20; }
+                    if (newTaskDifficulty.value === 'hard') { m = 100; w = 40; }
+                    if (newTaskDifficulty.value === 'epic') { m = 200; w = 80; }
+
+                    actions.value.push({ 
+                        text: newTaskText.value, 
+                        done: false, 
+                        rewardMoney: m, 
+                        rewardWhims: w 
+                    });
+                    newTaskText.value = '';
+                };
+
+                const completeAction = (index) => {
+                    let action = actions.value[index];
+                    action.done = !action.done;
+                    if (action.done) {
+                        money.value += action.rewardMoney;
+                        whims.value += action.rewardWhims;
+                    } else {
+                        money.value = Math.max(0, money.value - action.rewardMoney);
+                        whims.value = Math.max(0, whims.value - action.rewardWhims);
+                    }
+                };
+
+                const removeAction = (index) => {
+                    actions.value.splice(index, 1);
+                };
+
+                const addSkill = () => {
+                    if (!newSkillName.value.trim()) return;
+                    skills.value.push({ name: newSkillName.value, level: 1, xp: 0 });
+                    newSkillName.value = '';
+                };
+
+                const addXp = (index, amount) => {
+                    let s = skills.value[index];
+                    s.xp += amount;
+                    if (s.xp < 0) s.xp = 0;
+                    s.level = Math.floor(s.xp / 100) + 1;
+                };
+
+                const resetSkill = (index) => {
+                    skills.value[index].xp = 0;
+                    skills.value[index].level = 1;
+                };
+
+                const deleteSkill = (index) => {
+                    skills.value.splice(index, 1);
+                };
+
+                const addReward = () => {
+                    if (!newRewardName.value.trim() || !newRewardCost.value) return;
+                    shopItems.value.push({ name: newRewardName.value, cost: Number(newRewardCost.value) });
+                    newRewardName.value = '';
+                    newRewardCost.value = 200;
+                };
+
+                const removeReward = (index) => {
+                    shopItems.value.splice(index, 1);
+                };
+
+                const buyItem = (item) => {
+                    if (money.value >= item.cost) {
+                        money.value -= item.cost;
+                        alert(`¡Canjeado con éxito! Disfruta tu premio: ${item.name}`);
+                    } else {
+                        alert('¡No tienes suficientes Simoleones (§)! Completa tareas para ganar.');
+                    }
+                };
+
+                const addWhimStoreItem = () => {
+                    if (!newWhimName.value.trim() || !newWhimCost.value) return;
+                    whimShopItems.value.push({ name: newWhimName.value, cost: Number(newWhimCost.value) });
+                    newWhimName.value = '';
+                    newWhimCost.value = 20;
+                };
+
+                const removeWhimStoreItem = (index) => {
+                    whimShopItems.value.splice(index, 1);
+                };
+
+                const buyWhimItem = (item) => {
+                    if (whims.value >= item.cost) {
+                        whims.value -= item.cost;
+                        alert(`¡Capricho canjeado con éxito: ${item.name}! ✨`);
+                    } else {
+                        alert('¡No tienes suficientes Puntos de Capricho (✨)!');
+                    }
+                };
+
+                return {
+                    tab, shopSubTab, money, whims, needs, actions, newTaskText, newTaskDifficulty, 
+                    skills, newSkillName, shopItems, whimShopItems, newRewardName, newRewardCost, 
+                    newWhimName, newWhimCost, overallMood, moodText, moodColors, adjustNeed, addAction, 
+                    completeAction, removeAction, addSkill, addXp, resetSkill, deleteSkill, 
+                    addReward, removeReward, buyItem, addWhimStoreItem, removeWhimStoreItem, 
+                    buyWhimItem
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
