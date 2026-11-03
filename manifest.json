@@ -1,0 +1,12 @@
+{
+  "background_color": "#faf5f7",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Nyaaa! Sims",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Sims",
+  "start_url": "/",
+  "theme_color": "#f4acb7",
+  "description": "Mi app estilo Los Sims para hábitos y necesidades"
+}
