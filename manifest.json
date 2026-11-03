@@ -5,9 +5,9 @@
   "display": "standalone",
   "name": "Nyaaa! Sims",
   "orientation": "any",
-  "scope": "/",
+  "scope": "./",
   "short_name": "Sims",
-  "start_url": "/",
+  "start_url": "./",
   "theme_color": "#f4acb7",
   "icons": [
     {
